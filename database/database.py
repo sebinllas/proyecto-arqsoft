@@ -4,3 +4,4 @@ client = pymongo.MongoClient(
 db = client['enrollments']
 enrollments = db['enrollments']
 students = db['students']
+admins = db['admins']

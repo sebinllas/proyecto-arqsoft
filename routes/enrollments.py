@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.enrollment import Enrollemnt
 from typing import List
-from database.database import enrollments, students
+from database.database import enrollments, students, admins
+from routes.admin import auth_handler
 
 router = APIRouter(
     prefix="/enrollments",
     tags=["Enrollments"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(auth_handler.auth_wrapper)]
 )
 
 
-@router.get("/", response_model=List[Enrollemnt])
+@router.get("/", response_model=List[Enrollemnt], )
 def get_all_enrollments():
     enrollments_list = [i for i in enrollments.find()]
     for i in enrollments_list:
@@ -25,10 +27,10 @@ def get_enrollment(id):
         student = students.find_one({'_id': enrollment['student']['_id']})
         enrollment['student'] = student
         return enrollment
-    return HTTPException(404, 'Data not found')
+    return HTTPException(status.HTTP_404_NOT_FOUND, 'Data not found')
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def new_enrollment(enrollment: Enrollemnt):
     new_enrollment = enrollment.dict(by_alias=True)
     student = enrollment.student.dict(by_alias=True)

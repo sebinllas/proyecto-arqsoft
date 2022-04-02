@@ -4,8 +4,7 @@ from models.user_auth import userAuth
 from database.database import admins
 
 router = APIRouter(
-    prefix="/admin",
-    tags=["admin"],
+    tags=["auth"],
     responses={status.HTTP_401_UNAUTHORIZED: {"description": "Not found"}},
 )
 auth_handler = AuthHandler()

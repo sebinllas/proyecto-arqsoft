@@ -1,8 +1,11 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from models.enrollment import Enrollemnt
+from models.student import Student
+from models.update_enrollment import Enrollemnt as UpdateEnrollment
 from typing import List
 from database.database import enrollments, students, admins
-from routes.admin import auth_handler
+from routes.auth import auth_handler
 
 router = APIRouter(
     prefix="/enrollments",
@@ -20,14 +23,15 @@ def get_all_enrollments():
     return [Enrollemnt(**item) for item in enrollments_list]
 
 
-@router.get("/{id}")
+@router.get("/{id}", response_model=Enrollemnt)
 def get_enrollment(id):
+
     enrollment = enrollments.find_one({'_id': id})
     if enrollment:
         student = students.find_one({'_id': enrollment['student']['_id']})
         enrollment['student'] = student
-        return enrollment
-    return HTTPException(status.HTTP_404_NOT_FOUND, 'Data not found')
+        return Enrollemnt(**enrollment)
+    raise HTTPException(status.HTTP_404_NOT_FOUND, 'Data not found')
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -40,11 +44,35 @@ def new_enrollment(enrollment: Enrollemnt):
     return 'saved'
 
 
-@router.put("/{id}")
-def update_enrollment(id: str, new_enrollment: Enrollemnt):
-    return f'update enrollment {id}, to {new_enrollment}'
+@router.patch("/{id}")
+def update_enrollment(id: str, new_enrollment: UpdateEnrollment):
+    new_data_enrollment = new_enrollment.dict(exclude_unset=True)
+    modified_count = 0
+    enrollment = enrollments.find_one({'_id': id})
+    if not enrollment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+
+    if new_data_enrollment['student']:
+        new_data_student = new_data_enrollment.pop('student')
+        print(new_data_student)
+        result_student = students.update_one({'_id': enrollment['student']['_id']}, {
+                                             '$set': {**new_data_student}})
+        modified_count += result_student.modified_count
+
+    result_enrollment = enrollments.update_one({'_id':  id}, {
+        "$set": {**new_data_enrollment}})
+    modified_count += result_enrollment.modified_count
+    if modified_count == 0:
+        return "Given values equal than the stored ones"
+    return "Updated successfully"
 
 
 @router.delete('/{id}')
 def delete_enrollment(id: str):
-    return f'delete enrollment {id}'
+    result = enrollments.delete_one({'_id':  id})
+    print(result.deleted_count)
+    if result.deleted_count:
+        return 'Deleted successfully'
+    raise HTTPException(status.HTTP_404_NOT_FOUND,
+                        detail=f'No items with id {id}')

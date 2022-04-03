@@ -22,14 +22,13 @@ def register(auth_details: userAuth):
         'password': hashed_password
     })
     token = auth_handler.encode_token(auth_details.username)
-    return {'token': token, 'username': auth_details.username}
+    return {'status': True, 'token': token, 'username': auth_details.username}
 
 
 @router.post('/login')
 def login(auth_details: userAuth):
     user = admins.find_one({'username': auth_details.username})
     if (user is None) or (not auth_handler.verify_password(auth_details.password, user['password'])):
-        raise HTTPException(
-            status_code=401, detail='Invalid username and/or password')
+        return{'status': False, 'detail': 'wrong username or password'}
     token = auth_handler.encode_token(user['username'])
-    return {'token': token, 'username': auth_details.username}
+    return {'status': True, 'token': token, 'username': auth_details.username}

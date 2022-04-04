@@ -1,3 +1,4 @@
+from datetime import date
 from pydantic import BaseModel, Field
 from pydantic import EmailStr
 from typing import Optional

@@ -6,5 +6,5 @@ from .person import Person
 class Student(Person, BaseModel):
     attendant: Person
     grade: int
-    gruop: str
+    group: str
     state: Optional[str] = None

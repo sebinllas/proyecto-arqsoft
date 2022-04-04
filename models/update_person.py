@@ -1,7 +1,7 @@
+from datetime import date
 from pydantic import BaseModel, Field
 from pydantic import EmailStr
 from typing import Optional
-from datetime import datetime
 
 
 class Person(BaseModel):
@@ -9,4 +9,4 @@ class Person(BaseModel):
     phone: Optional[str]
     email: Optional[EmailStr]
     address: Optional[str]
-    birthday: Optional[datetime]
+    birthday: Optional[str]

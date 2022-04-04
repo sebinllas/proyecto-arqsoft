@@ -4,9 +4,7 @@ from routes import auth
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title='matriculas API', docs_url='/')
-origins = [
-    "http://localhost:4200"
-]
+origins = ["http://localhost:4200"]
 
 app.add_middleware(
     CORSMiddleware,
